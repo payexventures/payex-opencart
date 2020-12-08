@@ -52,7 +52,7 @@ class ControllerExtensionPaymentPayex extends Controller {
 	}
 
 	public function oc_return() {
-		if (isset($this->request->post['auth_code']) && ($this->request->post['auth_code'] == 0)) {
+		if (isset($this->request->post['auth_code']) && ($this->request->post['auth_code'] == '00' || $this->request->post['auth_code'] == '09' || $this->request->post['auth_code'] == '99')) {
 			$this->response->redirect($this->url->link('checkout/success', '', true));
 		} else {
 			$this->response->redirect($this->url->link('checkout/failure', '', true));
