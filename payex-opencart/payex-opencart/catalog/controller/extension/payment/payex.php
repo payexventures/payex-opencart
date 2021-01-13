@@ -31,8 +31,8 @@ class ControllerExtensionPaymentPayex extends Controller {
 		$data['ap_itemcode'] = $this->session->data['order_id'];
 		$data['ap_returnurl'] = $this->url->link('checkout/success');
 		$data['ap_cancelurl'] = $this->url->link('checkout/checkout', '', true);
-		$data['return_url'] = $this->url->link('extension/payment/payex/oc_return');
-		$data['callback_url'] = $this->url->link('extension/payment/payex/oc_callback');
+		$data['return_url'] = $this->url->link('extension/payment/payex/oc_return', '', true);
+		$data['callback_url'] = $this->url->link('extension/payment/payex/oc_callback', '', true);
 		$data['email'] = $order_info['email'];
 		$data['contact_number'] = $order_info['telephone'];
 		$data['customer_name'] = $order_info['shipping_firstname'] . " " . $order_info['shipping_lastname'];
