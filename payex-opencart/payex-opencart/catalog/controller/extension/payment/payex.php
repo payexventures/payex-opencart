@@ -12,53 +12,59 @@ class ControllerExtensionPaymentPayex extends Controller {
         $url = $this->config->get('payment_payex_environment') . 'api/Auth/Token';
         $options = array (
             'http' => array (
-                'header' => 'Authorization: Basic ' . $token,
+                'header' => 'Authorization: Basic ' . $token . "\r\nContent-Length: 0\r\n",
                 'method' => 'POST'
             )
         );
         $context = stream_context_create($options);
         $result = file_get_contents($url, false, $context);
 
-        $url = $this->config->get('payment_payex_environment') . 'api/v1/PaymentIntents';
-        $options = array (
-            'http' => array (
-                'header' => 'Authorization: Bearer ' . json_decode($result)->token,
-                'method' => 'POST'
-                'body' => json_encode(array(
-                    array(
-                        "amount" => round($this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false) * 100, 0) ,
-                        "currency" => $order_info['currency_code'],
-                        "description" => $this->config->get('config_name') . ' - #' . $this->session->data['order_id'],
-                        "reference_number" => $this->session->data['order_id'],
-                        "customer_id" => $order_info['customer_id'];
-                        "customer_name" => $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname'],
-                        "contact_number" => $order_info['telephone'],
-                        "email" => $order_info['email'],
-                        "address" => $order_info['payment_company'] . ' ' . $order_info['payment_address_1'] . ',' . $order_info['payment_address_2'],
-                        "postcode" => $order_info['payment_postcode'],
-                        "city" => $order_info['payment_city'],
-                        "state" => $order_info['payment_zone'],
-                        "country" => $order_info['payment_country'],
-                        "shipping_name" => $order_info['shipping_firstname'] . ' ' . $order_info['shipping_lastname'],
-                        "shipping_address" => $order_info['shipping_company'] . ' ' . $order_info['shipping_address_1'] . ',' . $order_info['shipping_address_2'],
-                        "shipping_postcode" => $order_info['shipping_postcode'],
-                        "shipping_city" => $order_info['shipping_city'],
-                        "shipping_state" => $order_info['shipping_zone'],
-                        "shipping_country" => $order_info['shipping_country'],
-                        "return_url" => $this->url->link('extension/payment/payex/oc_return', '', true),
-                        "accept_url" => $this->url->link('extension/payment/payex/oc_return', '', true),
-                        "reject_url" => $this->url->link('checkout/checkout', '', true),
-                        "callback_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
-                        "source" => "opencart"
-                    )
-                ));
-            )
-        );
-        $context = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
+        $curl = curl_init();
 
-        $decoded = json_decode($result);
-        if ($decoded['status'] == '00' && count($decoded['result']) != 0) $data['action'] = $decoded['result'][0]['url'];
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $this->config->get('payment_payex_environment') . 'api/v1/PaymentIntents',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode(array(
+                array(
+                    "amount" => round($this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false) * 100, 0) ,
+                    "currency" => $order_info['currency_code'],
+                    "description" => $this->config->get('config_name') . ' - #' . $this->session->data['order_id'],
+                    "reference_number" => $this->session->data['order_id'],
+                    "customer_id" => $order_info['customer_id'],
+                    "customer_name" => $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname'],
+                    "contact_number" => $order_info['telephone'],
+                    "email" => $order_info['email'],
+                    "address" => $order_info['payment_company'] . ' ' . $order_info['payment_address_1'] . ',' . $order_info['payment_address_2'],
+                    "postcode" => $order_info['payment_postcode'],
+                    "city" => $order_info['payment_city'],
+                    "state" => $order_info['payment_zone'],
+                    "country" => $order_info['payment_country'],
+                    "shipping_name" => $order_info['shipping_firstname'] . ' ' . $order_info['shipping_lastname'],
+                    "shipping_address" => $order_info['shipping_company'] . ' ' . $order_info['shipping_address_1'] . ',' . $order_info['shipping_address_2'],
+                    "shipping_postcode" => $order_info['shipping_postcode'],
+                    "shipping_city" => $order_info['shipping_city'],
+                    "shipping_state" => $order_info['shipping_zone'],
+                    "shipping_country" => $order_info['shipping_country'],
+                    "return_url" => $this->url->link('extension/payment/payex/oc_return', '', true),
+                    "accept_url" => $this->url->link('extension/payment/payex/oc_return', '', true),
+                    "reject_url" => $this->url->link('checkout/checkout', '', true),
+                    "callback_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
+                    "source" => "opencart"
+                )
+            )),
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: Bearer ' . json_decode($result)->token,
+                'Content-Type: application/json',
+            ),
+        ));
+        
+        $response = curl_exec($curl);
+        
+        curl_close($curl);
+
+        $decoded = json_decode($response);
+        if ($decoded->status == '00' && count($decoded->result) != 0) $data['action'] = $decoded->result[0]->url;
 
         return $this->load->view('extension/payment/payex', $data);
     }
