@@ -31,7 +31,7 @@ class ControllerExtensionPaymentPayex extends Controller {
                 'method' => 'POST'
                 'body' => json_encode(array(
                     array(
-                        "amount" => round($order_info['total'] * 100, 0) ,
+                        "amount" => round($this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false) * 100, 0) ,
                         "currency" => $order_info['currency_code'],
                         "description" => $this->config->get('config_name') . ' - #' . $this->session->data['order_id'],
                         "reference_number" => $this->session->data['order_id'],
