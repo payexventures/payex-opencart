@@ -62,12 +62,6 @@ class ControllerExtensionPaymentPayex extends Controller {
 
 		$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true);
 
-		if (isset($this->request->post['payment_payex_merchant'])) {
-			$data['payment_payex_merchant'] = $this->request->post['payment_payex_merchant'];
-		} else {
-			$data['payment_payex_merchant'] = $this->config->get('payment_payex_merchant');
-		}
-
 		if (isset($this->request->post['payment_payex_security'])) {
 			$data['payment_payex_security'] = $this->request->post['payment_payex_security'];
 		} else {
@@ -132,10 +126,6 @@ class ControllerExtensionPaymentPayex extends Controller {
 	protected function validate() {
 		if (!$this->user->hasPermission('modify', 'extension/payment/payex')) {
 			$this->error['warning'] = $this->language->get('error_permission');
-		}
-
-		if (!$this->request->post['payment_payex_merchant']) {
-			$this->error['merchant'] = $this->language->get('error_merchant');
 		}
 
 		if (!$this->request->post['payment_payex_security']) {

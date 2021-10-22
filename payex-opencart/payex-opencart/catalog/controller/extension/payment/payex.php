@@ -1,47 +1,68 @@
 <?php
 class ControllerExtensionPaymentPayex extends Controller {
     public function index() {
+        const API_URL = 'https://api.payex.io/';
+        const API_URL_SANDBOX = 'https://sandbox-payexapi.azurewebsites.net/';
+        const API_GET_TOKEN = 'api/Auth/Token';
+        const API_PAYMENT_FORM = 'api/v1/PaymentIntents';
+
         $data['button_confirm'] = $this->language->get('button_confirm');
 
         $this->load->model('checkout/order');
 
         $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
-        // $data['action'] = 'https://sandbox-payexapi.azurewebsites.net/Payment/Form';
-        $data['action'] = 'https://api.payex.io/Payment/Form';
-
         // get token
-        $auth_code = base64_encode($this->config->get('payment_payex_username') . ":" . $this->config->get('payment_payex_security'));
-        // $url = 'https://sandbox-payexapi.azurewebsites.net/api/Auth/token';
-        $url = 'https://api.payex.io/api/Auth/token';
+        $token = base64_encode($this->config->get('payment_payex_username') . ":" . $this->config->get('payment_payex_security'));
+        $url = API_URL . API_GET_TOKEN;
         $options = array (
             'http' => array (
-                'header' => "Authorization: Basic " . $auth_code . "\r\n"
-                    . "Content-Length: 0\r\n",
+                'header' => 'Authorization: Basic ' . $token,
                 'method' => 'POST'
             )
         );
         $context = stream_context_create($options);
         $result = file_get_contents($url, false, $context);
 
-        $data['token'] = json_decode($result)->token;
-        $data['ap_merchant'] = $this->config->get('payment_payex_merchant');
-        $data['ap_amount'] = $this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false);
-        $data['ap_currency'] = $order_info['currency_code'];
-        $data['ap_purchasetype'] = 'Item';
-        $data['ap_itemname'] = $this->config->get('config_name') . ' - #' . $this->session->data['order_id'];
-        $data['ap_itemcode'] = $this->session->data['order_id'];
-        $data['ap_returnurl'] = $this->url->link('checkout/success');
-        $data['ap_cancelurl'] = $this->url->link('checkout/checkout', '', true);
-        $data['return_url'] = $this->url->link('extension/payment/payex/oc_return', '', true);
-        $data['callback_url'] = $this->url->link('extension/payment/payex/oc_callback', '', true);
-        $data['email'] = $order_info['email'];
-        $data['contact_number'] = $order_info['telephone'];
-        $data['customer_name'] = $order_info['shipping_firstname'] . " " . $order_info['shipping_lastname'];
-        $data['address'] = $order_info['shipping_address_1'];
-        $data['postcode'] = $order_info['shipping_postcode'];
-        $data['state'] = $order_info['shipping_zone'];
-        $data['country'] = $order_info['shipping_country'];
+        $url = API_URL . API_PAYMENT_FORM;
+        $options = array (
+            'http' => array (
+                'header' => 'Authorization: Bearer ' . json_decode($result)->token,
+                'method' => 'POST'
+                'body' => json_encode(array(
+                    array(
+                        "amount" => round($order_info['total'] * 100, 0) ,
+                        "currency" => $order_info['currency_code'],
+                        "description" => $this->config->get('config_name') . ' - #' . $this->session->data['order_id'],
+                        "reference_number" => $this->session->data['order_id'],
+                        "customer_name" => $order_info['billing_firstname'] . ' ' . $order_info['billing_lastname'],
+                        "contact_number" => $order_info['telephone'],
+                        "email" => $order_info['email'],
+                        "address" => $order_info['billing_company'] . ' ' . $order_info['billing_address_1'] . ',' . $order_info['billing_address_2'],
+                        "postcode" => $order_info['billing_postcode'],
+                        "city" => $order_info['billing_city'],
+                        "state" => $order_info['billing_zone'],
+                        "country" => $order_info['billing_country'],
+                        "shipping_name" => $order_info['shipping_firstname'] . ' ' . $order_info['shipping_lastname'],
+                        "shipping_address" => $order_info['shipping_company'] . ' ' . $order_info['shipping_address_1'] . ',' . $order_info['shipping_address_2'],
+                        "shipping_postcode" => $order_info['shipping_postcode'],
+                        "shipping_city" => $order_info['shipping_city'],
+                        "shipping_state" => $order_info['shipping_zone'],
+                        "shipping_country" => $order_info['shipping_country'],
+                        "return_url" => $this->url->link('extension/payment/payex/oc_return', '', true),
+                        "accept_url" => $this->url->link('extension/payment/payex/oc_return', '', true),
+                        "reject_url" => $this->url->link('checkout/checkout', '', true),
+                        "callback_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
+                        "source" => "opencart"
+                    )
+                ));
+            )
+        );
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+
+        $decoded = json_decode($result);
+        if ($decoded['status'] == '00' && count($decoded['result']) != 0) $data['action'] = $decoded['result'][0]['url'];
 
         return $this->load->view('extension/payment/payex', $data);
     }

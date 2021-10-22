@@ -1,27 +1,4 @@
-<form action="{{ action }}" method="post">
-  <input type="hidden" name="ap_merchant" value="{{ ap_merchant }}" />
-  <input type="hidden" name="ap_amount" value="{{ ap_amount }}" />
-  <input type="hidden" name="amount" value="{{ ap_amount }}" />
-  <input type="hidden" name="ap_currency" value="{{ ap_currency }}" />
-  <input type="hidden" name="ap_purchasetype" value="{{ ap_purchasetype }}" />
-  <input type="hidden" name="ap_itemname" value="{{ ap_itemname }}" />
-  <input type="hidden" name="description" value="{{ ap_itemname }}" />
-  <input type="hidden" name="ap_itemcode" value="{{ ap_itemcode }}" />
-  <input type="hidden" name="reference_number" value="{{ ap_itemcode }}" />
-  <input type="hidden" name="ap_returnurl" value="{{ ap_returnurl }}" />
-  <input type="hidden" name="ap_cancelurl" value="{{ ap_cancelurl }}" />
-  <input type="hidden" name="return_url" value="{{ return_url }}" />
-  <input type="hidden" name="callback_url" value="{{ callback_url }}" />
-  <input type="hidden" name="token" value="{{ token }}" />
-  <input type="hidden" name="email" value="{{ email }}" />
-  <input type="hidden" name="contact_number" value="{{ contact_number }}" />
-  <input type="hidden" name="customer_name" value="{{ customer_name }}" />
-  <input type="hidden" name="payment_type" value="{{ payment_type }}" />
-  <input type="hidden" name="address" value="{{ address }}" />
-  <input type="hidden" name="postcode" value="{{ postcode }}" />
-  <input type="hidden" name="state" value="{{ state }}" />
-  <input type="hidden" name="country" value="{{ country }}" />
-  <input type="hidden" name="source" value="opencart" />
+<form action="{{ action }}" method="get">
   <div class="buttons">
     <div class="pull-right">
       <input type="submit" value="{{ button_confirm }}" class="btn btn-primary" />
