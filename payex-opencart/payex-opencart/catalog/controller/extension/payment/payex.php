@@ -76,34 +76,36 @@ class ControllerExtensionPaymentPayex extends Controller {
             $this->load->model('checkout/order');
 
             if ($this->request->post['auth_code'] == '00') {
-                $this->log->write('[PAYEX] Successful transaction, changing DB status of # '.$this->request->post['reference_number'].' to '. $this->config->get('payment_payex_order_status_id'));
-
+                $this->log->write('[PAYEX] Successful transaction, changing DB status of # '.$this->request->post['reference_number'].' to ' . $this->config->get('payment_payex_completed_status_id'));
                 try {
                     $this->cart->clear();
-
                     $this->model_checkout_order->addOrderHistory(
                         $this->request->post['reference_number'],
-                        $this->config->get('payment_payex_order_status_id'),
+                        $this->config->get('payment_payex_completed_status_id'),
                         "Auth Code: " . $this->request->post['auth_code'] . " - Payment Successful",
                         false, true
                     );
-
-
                 } catch (\Exception $ex) {
                     $this->log->write('[PAYEX] Failed to update status of order #' . $this->request->post['reference_number']);
                     $this->log->write($ex->getMessage());
                 }
-
+            } else if ($this->request->post['auth_code'] == '09') {
+                $this->log->write('[PAYEX] Pending Transaction #'.$this->request->post['reference_number']);
+                $this->model_checkout_order->addOrderHistory(
+                    $this->request->post['reference_number'],
+                    $this->config->get('payment_payex_pending_status_id'),
+                    "Auth Code: " . $this->request->post['auth_code'] . " - Payment Pending",
+                    false, true
+                );
             } else {
                 $this->log->write('[PAYEX] Failed Transaction #'.$this->request->post['reference_number']);
                 $this->model_checkout_order->addOrderHistory(
                     $this->request->post['reference_number'],
-                    $this->config->get('payment_payex_order_status_id'),
-                    "Auth Code: " . $this->request->post['auth_code'] . " - Payment Failed / Pending",
+                    $this->config->get('payment_payex_failed_status_id'),
+                    "Auth Code: " . $this->request->post['auth_code'] . " - Payment Failed",
                     false, true
                 );
             }
-
         }
     }
 
@@ -115,6 +117,5 @@ class ControllerExtensionPaymentPayex extends Controller {
              header('Set-Cookie: ' . $this->config->get('session_name') . '=' . $this->session->getId() . '; SameSite=None; Secure');
             $this->response->redirect($this->url->link('checkout/failure'));
         }
-
     }
 }

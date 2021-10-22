@@ -90,6 +90,24 @@ class ControllerExtensionPaymentPayex extends Controller {
 			$data['payment_payex_order_status_id'] = $this->config->get('payment_payex_order_status_id');
 		}
 
+		if (isset($this->request->post['payment_payex_completed_status_id'])) {
+			$data['payment_payex_completed_status_id'] = $this->request->post['payment_payex_completed_status_id'];
+		} else {
+			$data['payment_payex_completed_status_id'] = $this->config->get('payment_payex_completed_status_id');
+		}
+
+		if (isset($this->request->post['payment_payex_pending_status_id'])) {
+			$data['payment_payex_pending_status_id'] = $this->request->post['payment_payex_pending_status_id'];
+		} else {
+			$data['payment_payex_pending_status_id'] = $this->config->get('payment_payex_pending_status_id');
+		}
+
+		if (isset($this->request->post['payment_payex_failed_status_id'])) {
+			$data['payment_payex_failed_status_id'] = $this->request->post['payment_payex_failed_status_id'];
+		} else {
+			$data['payment_payex_failed_status_id'] = $this->config->get('payment_payex_failed_status_id');
+		}
+
 		$this->load->model('localisation/order_status');
 
 		$data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();

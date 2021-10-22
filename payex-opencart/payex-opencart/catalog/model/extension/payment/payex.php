@@ -7,8 +7,6 @@ class ModelExtensionPaymentPayex extends Model {
 
 		if ($this->config->get('payment_payex_total') > 0 && $this->config->get('payment_payex_total') > $total) {
 			$status = false;
-		} elseif ($this->session->data['currency'] != "MYR") {
-			$status = false;
 		} elseif (!$this->config->get('payment_payex_geo_zone_id')) {
 			$status = true;
 		} elseif ($query->num_rows) {
