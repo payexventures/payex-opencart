@@ -25,17 +25,22 @@
       </div>
       <div class="panel-body">
         <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-payment" class="form-horizontal">
-          <div class="form-group required">
-            <label class="col-sm-2 control-label" for="input-security">{{ entry_security }}</label>
+        <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
             <div class="col-sm-10">
-              <input type="text" name="payment_payex_security" value="{{ payment_payex_security }}" placeholder="{{ entry_security }}" id="input-security" class="form-control" />
-              {% if error_security %}
-              <div class="text-danger">{{ error_security }}</div>
-              {% endif %}
+              <select name="payment_payex_status" id="input-status" class="form-control">
+                {% if payment_payex_status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
             </div>
           </div>
-          <div class="form-group required">
-            <label class="col-sm-2 control-label" for="input-username">{{ entry_username }}</label>
+        <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-username"><span data-toggle="tooltip" title="{{ help_username }}">{{ entry_username }}</label>
             <div class="col-sm-10">
               <input type="text" name="payment_payex_username" value="{{ payment_payex_username }}" placeholder="{{ entry_username }}" id="input-username" class="form-control" />
               {% if error_username %}
@@ -43,16 +48,45 @@
               {% endif %}
             </div>
           </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-callback"><span data-toggle="tooltip" title="{{ help_callback }}">{{ entry_callback }}</span></label>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-security"><span data-toggle="tooltip" title="{{ help_security }}">{{ entry_security }}</label>
             <div class="col-sm-10">
-              <textarea rows="5" readonly id="input-callback" class="form-control">{{ callback }}</textarea>
+              <input type="text" name="payment_payex_security" value="{{ payment_payex_security }}" placeholder="{{ entry_security }}" id="input-security" class="form-control" />
+              {% if error_security %}
+              <div class="text-danger">{{ error_security }}</div>
+              {% endif %}
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-return"><span data-toggle="tooltip" title="{{ help_return }}">{{ entry_return }}</span></label>
+            <label class="col-sm-2 control-label" for="input-environment"><span data-toggle="tooltip" title="{{ help_environment }}">{{ entry_environment }}</span></label>
+            <div class="col-sm-10">
+              <select name="payment_payex_environment" id="input-environment" class="form-control">
+                {% set payex_environments = 
+                { 
+                  prod: { title:"Production", url:"https://api.payex.io/"},
+                  sand: { title:"Sandbox", url:"https://sandbox-payexapi.azurewebsites.net/"}
+                }
+                %}
+                {% for payex_environment in payex_environments %}
+                {% if payex_environment.url == payment_payex_environment %}
+                <option value="{{ payex_environment.url }}" selected="selected">{{ payex_environment.title }}</option>
+                {% else %}
+                <option value="{{ payex_environment.url }}">{{ payex_environment.title }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-return">{{ entry_return }}</span></label>
             <div class="col-sm-10">
               <textarea rows="5" readonly id="input-return" class="form-control">{{ return }}</textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-callback">{{ entry_callback }}</span></label>
+            <div class="col-sm-10">
+              <textarea rows="5" readonly id="input-callback" class="form-control">{{ callback }}</textarea>
             </div>
           </div>
           <div class="form-group">
@@ -87,20 +121,6 @@
                 <option value="{{ geo_zone.geo_zone_id }}">{{ geo_zone.name }}</option>
                 {% endif %}
                 {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
-            <div class="col-sm-10">
-              <select name="payment_payex_status" id="input-status" class="form-control">
-                {% if payment_payex_status %}
-                <option value="1" selected="selected">{{ text_enabled }}</option>
-                <option value="0">{{ text_disabled }}</option>
-                {% else %}
-                <option value="1">{{ text_enabled }}</option>
-                <option value="0" selected="selected">{{ text_disabled }}</option>
-                {% endif %}
               </select>
             </div>
           </div>

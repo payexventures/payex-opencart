@@ -1,11 +1,6 @@
 <?php
 class ControllerExtensionPaymentPayex extends Controller {
     public function index() {
-        const API_URL = 'https://api.payex.io/';
-        const API_URL_SANDBOX = 'https://sandbox-payexapi.azurewebsites.net/';
-        const API_GET_TOKEN = 'api/Auth/Token';
-        const API_PAYMENT_FORM = 'api/v1/PaymentIntents';
-
         $data['button_confirm'] = $this->language->get('button_confirm');
 
         $this->load->model('checkout/order');
@@ -14,7 +9,7 @@ class ControllerExtensionPaymentPayex extends Controller {
 
         // get token
         $token = base64_encode($this->config->get('payment_payex_username') . ":" . $this->config->get('payment_payex_security'));
-        $url = API_URL . API_GET_TOKEN;
+        $url = $this->config->get('payment_payex_environment') . 'api/Auth/Token';
         $options = array (
             'http' => array (
                 'header' => 'Authorization: Basic ' . $token,
@@ -24,7 +19,7 @@ class ControllerExtensionPaymentPayex extends Controller {
         $context = stream_context_create($options);
         $result = file_get_contents($url, false, $context);
 
-        $url = API_URL . API_PAYMENT_FORM;
+        $url = $this->config->get('payment_payex_environment') . 'api/v1/PaymentIntents';
         $options = array (
             'http' => array (
                 'header' => 'Authorization: Bearer ' . json_decode($result)->token,

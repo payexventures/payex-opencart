@@ -23,22 +23,16 @@ class ControllerExtensionPaymentPayex extends Controller {
 			$data['error_warning'] = '';
 		}
 
-		if (isset($this->error['merchant'])) {
-			$data['error_merchant'] = $this->error['merchant'];
+		if (isset($this->error['username'])) {
+			$data['error_username'] = $this->error['username'];
 		} else {
-			$data['error_merchant'] = '';
+			$data['error_username'] = '';
 		}
 
 		if (isset($this->error['security'])) {
 			$data['error_security'] = $this->error['security'];
 		} else {
 			$data['error_security'] = '';
-		}
-
-		if (isset($this->error['username'])) {
-			$data['error_username'] = $this->error['username'];
-		} else {
-			$data['error_username'] = '';
 		}
 
 		$data['breadcrumbs'] = array();
@@ -62,16 +56,22 @@ class ControllerExtensionPaymentPayex extends Controller {
 
 		$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true);
 
+		if (isset($this->request->post['payment_payex_username'])) {
+			$data['payment_payex_username'] = $this->request->post['payment_payex_username'];
+		} else {
+			$data['payment_payex_username'] = $this->config->get('payment_payex_username');
+		}
+
 		if (isset($this->request->post['payment_payex_security'])) {
 			$data['payment_payex_security'] = $this->request->post['payment_payex_security'];
 		} else {
 			$data['payment_payex_security'] = $this->config->get('payment_payex_security');
 		}
 
-		if (isset($this->request->post['payment_payex_username'])) {
-			$data['payment_payex_username'] = $this->request->post['payment_payex_username'];
+		if (isset($this->request->post['payment_payex_environment'])) {
+			$data['payment_payex_environment'] = $this->request->post['payment_payex_environment'];
 		} else {
-			$data['payment_payex_username'] = $this->config->get('payment_payex_username');
+			$data['payment_payex_environment'] = $this->config->get('payment_payex_environment');
 		}
 
 		$data['callback'] = HTTP_CATALOG . 'index.php?route=extension/payment/payex/oc_callback';
