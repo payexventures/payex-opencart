@@ -46,9 +46,7 @@ class ControllerExtensionPaymentPayex extends Controller {
                     "shipping_city" => $order_info['shipping_city'],
                     "shipping_state" => $order_info['shipping_zone'],
                     "shipping_country" => $order_info['shipping_country'],
-                    "return_url" => $this->url->link('extension/payment/payex/oc_return', '', true),
-                    "accept_url" => $this->url->link('extension/payment/payex/oc_return', '', true),
-                    "reject_url" => $this->url->link('checkout/checkout', '', true),
+                    "return_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
                     "callback_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
                     "source" => "opencart"
                 )
@@ -74,48 +72,45 @@ class ControllerExtensionPaymentPayex extends Controller {
 
         if (isset($this->request->post['auth_code'])) {
             $this->load->model('checkout/order');
+            $txn_id = $this->request->post['txn_id'];
+            $reference_number = $this->request->post['reference_number'];
+            $response_description = $this->request->post['response'];
+            $response_code = $this->request->post['auth_code'];
 
-            if ($this->request->post['auth_code'] == '00') {
-                $this->log->write('[PAYEX] Successful transaction, changing DB status of # '.$this->request->post['reference_number'].' to ' . $this->config->get('payment_payex_completed_status_id'));
+            if ($response_code == '00') {
+                $this->log->write('[PAYEX] Successful transaction, changing DB status of # '.$reference_number.' to ' . $this->config->get('payment_payex_completed_status_id'));
                 try {
                     $this->cart->clear();
                     $this->model_checkout_order->addOrderHistory(
-                        $this->request->post['reference_number'],
+                        $reference_number,
                         $this->config->get('payment_payex_completed_status_id'),
-                        "Auth Code: " . $this->request->post['auth_code'] . " - Payment Successful",
+                        'Payment completed via Payex (Txn ID: '.$txn_id.')',
                         false, true
                     );
+                    $this->response->redirect($this->url->link('checkout/success', '', true));
                 } catch (\Exception $ex) {
-                    $this->log->write('[PAYEX] Failed to update status of order #' . $this->request->post['reference_number']);
+                    $this->log->write('[PAYEX] Failed to update status of order #' . $reference_number);
                     $this->log->write($ex->getMessage());
                 }
-            } else if ($this->request->post['auth_code'] == '09') {
-                $this->log->write('[PAYEX] Pending Transaction #'.$this->request->post['reference_number']);
+            } else if ($response_code == '09' || $response_code == '99') {
+                $this->log->write('[PAYEX] Pending Transaction #'.$reference_number);
                 $this->model_checkout_order->addOrderHistory(
-                    $this->request->post['reference_number'],
+                    $reference_number,
                     $this->config->get('payment_payex_pending_status_id'),
-                    "Auth Code: " . $this->request->post['auth_code'] . " - Payment Pending",
+                    'Payment pending via Payex (Txn ID: '.$txn_id.')',
                     false, true
                 );
+                $this->response->redirect($this->url->link('checkout/checkout', '', true));
             } else {
-                $this->log->write('[PAYEX] Failed Transaction #'.$this->request->post['reference_number']);
+                $this->log->write('[PAYEX] Failed Transaction #'.$reference_number);
                 $this->model_checkout_order->addOrderHistory(
-                    $this->request->post['reference_number'],
+                    $reference_number,
                     $this->config->get('payment_payex_failed_status_id'),
-                    "Auth Code: " . $this->request->post['auth_code'] . " - Payment Failed",
+                    'Payment failed via Payex (Txn ID: '.$txn_id.') with Response Code: ' . $response_code . ', Response Message: ' . $response_description,
                     false, true
                 );
+                $this->response->redirect($this->url->link('checkout/failure', '', true));
             }
-        }
-    }
-
-    public function oc_return() {
-        if (isset($this->request->post['auth_code']) && $this->request->post['auth_code'] == '00') {
-            header('Set-Cookie: ' . $this->config->get('session_name') . '=' . $this->session->getId() . '; SameSite=None; Secure');
-            $this->response->redirect($this->url->link('checkout/success'));
-        } else {
-             header('Set-Cookie: ' . $this->config->get('session_name') . '=' . $this->session->getId() . '; SameSite=None; Secure');
-            $this->response->redirect($this->url->link('checkout/failure'));
         }
     }
 }
