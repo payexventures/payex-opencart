@@ -48,7 +48,7 @@ class ControllerExtensionPaymentPayex extends Controller {
                     "shipping_country" => $order_info['shipping_country'],
                     "return_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
                     "accept_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
-                    "reject_url" => $this->url->link('checkout/checkout', '', true),
+                    "reject_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
                     "callback_url" => $this->url->link('extension/payment/payex/oc_callback', '', true),
                     "source" => "opencart"
                 )
